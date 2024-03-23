@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: kube-state-metrics
+  name: kube-state-metrics
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+  - name: http-metrics
+    port: 8080
+    targetPort: http-metrics
+  - name: telemetry
+    port: 8081
+    targetPort: telemetry
+  selector:
+    app: kube-state-metrics
+dhvlftmd52@cloudshell:~/k8s-prometheus-grafana/prometheus/my-prometheus-grafana (tidy-weaver-417707)$ cat prometheus-svc.yaml 
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: monitoring
+  labels:
+    app: prometheus-service
+    component: core
+  annotations:
+    prometheus.io/scrape: 'true'
+    prometheus.io/port:   '9090'
+spec:
+  selector:
+    app: prometheus-server
+    component: core
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 9090
+      targetPort: 9090
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-deployment
+  namespace: monitoring
+  labels:
+    app: prometheus-server
+    component: core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus-server
+      component: core
+  template:
+    metadata:
+      labels:
+        app: prometheus-server
+        component: core
+    spec:
+      containers:
+        - name: prometheus
+          image: prom/prometheus:v2.20.1
+          args:
+            - "--config.file=/etc/prometheus/prometheus.yml"
+            - "--storage.tsdb.path=/prometheus/"
+            - "--web.enable-admin-api"
+            - "--storage.tsdb.retention.time=15d"
+          ports:
+            - containerPort: 9090
+              protocol: TCP
+          volumeMounts:
+            - mountPath: "/prometheus"
+              name: prometheus-storage-volume
+            - mountPath: "/etc/prometheus"
+              name: prometheus-config-volume
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 500m
+              memory: 2500Mi
+      volumes:
+        - name: prometheus-config-volume
+          configMap:
+            defaultMode: 420
+            name: prometheus-server-conf
+        - name: prometheus-storage-volume
+          emptyDir: {}
