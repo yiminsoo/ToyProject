@@ -9,7 +9,7 @@ volumeBindingMode: WaitForFirstConsumer
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: jenkins-pv-volume2
+  name: jenkins-pv-volume
   labels:
     type: local
 spec:
