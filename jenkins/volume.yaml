@@ -30,7 +30,7 @@ spec:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - gke-dendrobium-2-default-pool-5f336ea5-6pxm
+          - gke-dendrobium-2-default-pool-5f336ea5-ntww
 
 ---
 apiVersion: v1

@@ -14,5 +14,6 @@ spec:
   ports:
     - port: 8889   # 외부 포트를 8080으로 변경
       targetPort: 8080   # 대상 포트도 8080으로 유지
+  externalTrafficPolicy: Local
       
 
