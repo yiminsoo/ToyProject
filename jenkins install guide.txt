@@ -1,0 +1,69 @@
+[jenkins install]
+sudo apt update
+sudo apt install openjdk-11-jdk
+
+curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee \
+  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+
+sudo apt update
+
+sudo apt install jenkins
+
+ip:8080으로 접속
+
+cat /var/lib/jenkins/secrets/initialAdminPassword
+
+
+[ ngrok으로 외부 포워딩]
+
+로컬에서 원래 깃 웹훅은 안 된다.
+그냥 안된다.
+하지만 억지로 하는 방법이 있다.
+
+https://ngrok.com/에 가입한다.
+
+curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc \
+  | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && echo "deb https://ngrok-agent.s3.amazonaws.com buster main" \
+  | sudo tee /etc/apt/sources.list.d/ngrok.list && sudo apt update && sudo apt install ngrok
+
+---
+
+ngrok config add-authtoken <계정마다 토큰 다릅니다.>
+
+ngrok http http://localhost:젠킨스 포트입력
+
+실행후 제시되는 포트에 연결!
+
+
+[webhook 구성]
+
+깃헙 프로젝트 설정에서 웹훅을 클릭
+포워딩된 주소 뒤에 /github-webhook 을 붙여주고 기본설정 ok
+
+다음으로 jenkins에 github 토큰 등록
+
+생성시 username with passwd 로
+username에 깃허브 이름
+패스워드는 token
+ID는 github_access_token
+
+
+pipeline {
+    agent any
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    credentialsId: 'github_access_token',
+                    url: ''
+            }
+        }
+    }
+}
+
+
+
